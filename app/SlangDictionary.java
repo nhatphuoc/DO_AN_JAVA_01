@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class SlangDictionary {
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Slang Dictionary");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
+        frame.setSize(800, 400);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         frame.add(mainPanel);
@@ -201,6 +202,71 @@ public class SlangDictionary {
             }
         });
 
+        
+
+        // Thêm vào actionPanel
+        JButton randomQuestionButton = new JButton("Random Slang Quiz");
+        JButton randomDefinitionButton = new JButton("Random Definition Quiz");
+        actionPanel.add(randomQuestionButton);
+        actionPanel.add(randomDefinitionButton);
+
+        // Random Slang Action
+        randomQuestionButton.addActionListener(e -> {
+            List<String> keys = new ArrayList<>(slangMap.keySet());
+            if (keys.size() < 4) {
+                JOptionPane.showMessageDialog(frame, "Not enough slang words for the quiz.");
+                return;
+            }
+            String randomSlang = keys.get(new Random().nextInt(keys.size()));
+            List<String> options = new ArrayList<>(keys);
+            options.remove(randomSlang);
+            Collections.shuffle(options);
+            options = options.subList(0, 3); // Lấy 3 slang words khác
+            options.add(randomSlang); // Thêm slang word ngẫu nhiên vào đáp án
+            Collections.shuffle(options); // Xáo trộn lại đáp án
+
+            String message = "Which of the following is the meaning of: " + randomSlang + "?";
+            int answer = JOptionPane.showOptionDialog(frame, message, "Random Slang Quiz",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+                    options.toArray(), options.get(0));
+
+            if (options.get(answer).equals(randomSlang)) {
+                JOptionPane.showMessageDialog(frame, "Correct!");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Wrong! The correct answer was: " + randomSlang);
+            }
+        });
+
+        // Random Definition Quiz Action
+        randomDefinitionButton.addActionListener(e -> {
+            List<String> keys = new ArrayList<>(slangMap.keySet());
+            if (keys.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "No slang words available for the quiz.");
+                return;
+            }
+            String randomSlang = keys.get(new Random().nextInt(keys.size()));
+            String definition = slangMap.get(randomSlang);
+            
+            List<String> options = new ArrayList<>(keys);
+            options.remove(randomSlang);
+            Collections.shuffle(options);
+            options = options.subList(0, 3); // Lấy 3 slang words khác
+            options.add(randomSlang); // Thêm slang word đúng vào đáp án
+            Collections.shuffle(options); // Xáo trộn lại đáp án
+
+            String message = "Which slang word corresponds to the definition: " + definition + "?";
+            int answer = JOptionPane.showOptionDialog(frame, message, "Random Definition Quiz",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+                    options.toArray(), options.get(0));
+
+            if (options.get(answer).equals(randomSlang)) {
+                JOptionPane.showMessageDialog(frame, "Correct!");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Wrong! The correct answer was: " + randomSlang);
+            }
+        });
+
         frame.setVisible(true);
+        System.out.println("hihi");
     }
 }
