@@ -1,4 +1,4 @@
-package app;
+
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -32,7 +32,7 @@ public class SlangDictionary {
     public static DefaultListModel<String> historyModel = new DefaultListModel<>();
 
     public static void main(String[] args) {
-        loadSlangWords("slang.txt");
+        loadSlangWords("./data/slang.txt");
         SwingUtilities.invokeLater(SlangDictionary::createAndShowGUI);
     }
 
@@ -192,7 +192,7 @@ public class SlangDictionary {
 
         // Action for Reset
         resetItem.addActionListener(e -> {
-            loadSlangWords("slang_original.txt");
+            loadSlangWords("./data/slang_original.txt");
             JOptionPane.showMessageDialog(frame, "Slang dictionary reset to original.");
         });
 
