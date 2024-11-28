@@ -1,5 +1,3 @@
-
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -27,7 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 public class SlangDictionary {
-    public static Map<String, String> slangMap = new HashMap<>();
+    public static Map<String, List<String>> slangMap = new HashMap<>();
     public static List<String> searchHistory = new ArrayList<>();
     public static DefaultListModel<String> historyModel = new DefaultListModel<>();
 
@@ -42,7 +40,11 @@ public class SlangDictionary {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("`");
                 if (parts.length == 2) {
-                    slangMap.put(parts[0].trim(), parts[1].trim());
+                    String slang = parts[0].trim();
+                    String[] definitions = parts[1].trim().split("\\|"); // Split definitions by '|'
+                    List<String> definitionList = new ArrayList<>();
+                    Collections.addAll(definitionList, definitions);
+                    slangMap.put(slang, definitionList);
                 }
             }
         } catch (IOException e) {
@@ -58,13 +60,11 @@ public class SlangDictionary {
         JPanel mainPanel = new JPanel(new BorderLayout());
         frame.add(mainPanel);
 
-        // Results Area
         JTextArea resultsArea = new JTextArea();
         resultsArea.setEditable(false);
         JScrollPane resultsScroll = new JScrollPane(resultsArea);
         mainPanel.add(resultsScroll, BorderLayout.CENTER);
 
-        // History Panel
         JPanel historyPanel = new JPanel(new BorderLayout());
         historyPanel.setPreferredSize(new Dimension(150, 0));
         historyPanel.add(new JLabel("Search History"), BorderLayout.NORTH);
@@ -72,10 +72,8 @@ public class SlangDictionary {
         historyPanel.add(new JScrollPane(historyList), BorderLayout.CENTER);
         mainPanel.add(historyPanel, BorderLayout.EAST);
 
-        // Menu Bar
         JMenuBar menuBar = new JMenuBar();
 
-        // Search Menu
         JMenu searchMenu = new JMenu("Search");
         JMenuItem searchByDefinitionItem = new JMenuItem("Search by Definition");
         JMenuItem searchBySlangItem = new JMenuItem("Search by Slang");
@@ -83,7 +81,6 @@ public class SlangDictionary {
         searchMenu.add(searchBySlangItem);
         menuBar.add(searchMenu);
 
-        // Manage Menu
         JMenu manageMenu = new JMenu("Manage");
         JMenuItem addSlangItem = new JMenuItem("Add Slang");
         JMenuItem editSlangItem = new JMenuItem("Edit Slang");
@@ -95,7 +92,6 @@ public class SlangDictionary {
         manageMenu.add(resetItem);
         menuBar.add(manageMenu);
 
-        // Quiz Menu
         JMenu quizMenu = new JMenu("Quiz");
         JMenuItem randomSlangQuizItem = new JMenuItem("Random Slang Quiz");
         JMenuItem randomDefinitionQuizItem = new JMenuItem("Random Definition Quiz");
@@ -105,19 +101,20 @@ public class SlangDictionary {
 
         frame.setJMenuBar(menuBar);
 
-        // Action for Search by Definition
         searchByDefinitionItem.addActionListener(e -> {
             String keyword = JOptionPane.showInputDialog(frame, "Enter keyword to search by definition:");
             if (keyword == null || keyword.trim().isEmpty()) return;
 
             StringBuilder results = new StringBuilder();
-            for (Map.Entry<String, String> entry : slangMap.entrySet()) {
-                if (entry.getValue().toLowerCase().contains(keyword.toLowerCase())) {
-                    results.append(entry.getKey()).append(" - ").append(entry.getValue()).append("\n");
+            for (Map.Entry<String, List<String>> entry : slangMap.entrySet()) {
+                for (String definition : entry.getValue()) {
+                    if (definition.toLowerCase().contains(keyword.toLowerCase())) {
+                        results.append(entry.getKey()).append(" - ").append(definition).append("\n");
+                    }
                 }
             }
 
-            if (results.length() ==  0) {
+            if (results.length() == 0) {
                 resultsArea.setText("No results found for keyword: " + keyword);
             } else {
                 resultsArea.setText(results.toString());
@@ -126,14 +123,13 @@ public class SlangDictionary {
             }
         });
 
-        // Action for Search by Slang
         searchBySlangItem.addActionListener(e -> {
             String slang = JOptionPane.showInputDialog(frame, "Enter slang word to search:");
             if (slang == null || slang.trim().isEmpty()) return;
 
-            String definition = slangMap.get(slang);
-            if (definition != null) {
-                resultsArea.setText(slang + " - " + definition);
+            List<String> definitions = slangMap.get(slang);
+            if (definitions != null) {
+                resultsArea.setText(slang + " - " + String.join(", ", definitions));
                 searchHistory.add(slang);
                 historyModel.addElement(slang);
             } else {
@@ -141,13 +137,15 @@ public class SlangDictionary {
             }
         });
 
-        // Action for Add Slang
         addSlangItem.addActionListener(e -> {
             String slang = JOptionPane.showInputDialog(frame, "Enter Slang Word:");
             if (slang == null || slang.trim().isEmpty()) return;
 
-            String definition = JOptionPane.showInputDialog(frame, "Enter Definition:");
+            String definition = JOptionPane.showInputDialog(frame, "Enter Definition (use '|' for multiple meanings):");
             if (definition == null || definition.trim().isEmpty()) return;
+
+            List<String> definitionList = new ArrayList<>();
+            Collections.addAll(definitionList, definition.split("\\|"));
 
             if (slangMap.containsKey(slang)) {
                 int choice = JOptionPane.showConfirmDialog(frame, "Slang word already exists. Overwrite?",
@@ -155,11 +153,10 @@ public class SlangDictionary {
                 if (choice == JOptionPane.NO_OPTION) return;
             }
 
-            slangMap.put(slang, definition);
+            slangMap.put(slang, definitionList);
             JOptionPane.showMessageDialog(frame, "Slang word added/ updated successfully.");
         });
 
-        // Action for Edit Slang
         editSlangItem.addActionListener(e -> {
             String slang = JOptionPane.showInputDialog(frame, "Enter Slang Word to Edit:");
             if (slang == null || !slangMap.containsKey(slang)) {
@@ -167,14 +164,15 @@ public class SlangDictionary {
                 return;
             }
 
-            String definition = JOptionPane.showInputDialog(frame, "Enter New Definition:", slangMap.get(slang));
+            String definition = JOptionPane.showInputDialog(frame, "Enter New Definition (use '|' for multiple meanings):", String.join("|", slangMap.get(slang)));
             if (definition != null) {
-                slangMap.put(slang, definition);
+                List<String> definitionList = new ArrayList<>();
+                Collections.addAll(definitionList, definition.split("\\|"));
+                slangMap.put(slang, definitionList);
                 JOptionPane.showMessageDialog(frame, "Slang word updated successfully.");
             }
         });
 
-        // Action for Delete Slang
         deleteSlangItem.addActionListener(e -> {
             String slang = JOptionPane.showInputDialog(frame, "Enter Slang Word to Delete:");
             if (slang == null || !slangMap.containsKey(slang)) {
@@ -190,13 +188,11 @@ public class SlangDictionary {
             }
         });
 
-        // Action for Reset
         resetItem.addActionListener(e -> {
             loadSlangWords("./data/slang_original.txt");
             JOptionPane.showMessageDialog(frame, "Slang dictionary reset to original.");
         });
 
-        // Action for Random Slang Quiz
         randomSlangQuizItem.addActionListener(e -> {
             List<String> keys = new ArrayList<>(slangMap.keySet());
             if (keys.size() < 4) {
@@ -207,9 +203,9 @@ public class SlangDictionary {
             List<String> options = new ArrayList<>(keys);
             options.remove(randomSlang);
             Collections.shuffle(options);
-            options = options.subList(0, 3); // Get 3 other slang words
-            options.add(randomSlang); // Add the random slang word to the options
-            Collections.shuffle(options); // Shuffle the options
+            options = options.subList(0, 3); 
+            options.add(randomSlang); 
+            Collections.shuffle(options);
 
             String message = "Which of the following is the meaning of: " + randomSlang + "?";
             int answer = JOptionPane.showOptionDialog(frame, message, "Random Slang Quiz",
@@ -223,7 +219,6 @@ public class SlangDictionary {
             }
         });
 
-        // Action for Random Definition Quiz
         randomDefinitionQuizItem.addActionListener(e -> {
             List<String> keys = new ArrayList<>(slangMap.keySet());
             if (keys.isEmpty()) {
@@ -231,14 +226,15 @@ public class SlangDictionary {
                 return;
             }
             String randomSlang = keys.get(new Random().nextInt(keys.size()));
-            String definition = slangMap.get(randomSlang);
+            List<String> definitions = slangMap.get(randomSlang);
+            String definition = definitions.get(new Random().nextInt(definitions.size())); 
             
             List<String> options = new ArrayList<>(keys);
             options.remove(randomSlang);
             Collections.shuffle(options);
-            options = options.subList(0, 3); // Get 3 other slang words
-            options.add(randomSlang); // Add the correct slang word to the options
-            Collections.shuffle(options); // Shuffle the options
+            options = options.subList(0, 3); 
+            options.add(randomSlang); 
+            Collections.shuffle(options); 
 
             String message = "Which slang word corresponds to the definition: " + definition + "?";
             int answer = JOptionPane.showOptionDialog(frame, message, "Random Definition Quiz",
