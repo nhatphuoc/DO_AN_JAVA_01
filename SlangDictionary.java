@@ -1,7 +1,12 @@
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +46,7 @@ public class SlangDictionary {
                 String[] parts = line.split("`");
                 if (parts.length == 2) {
                     String slang = parts[0].trim();
-                    String[] definitions = parts[1].trim().split("\\|"); // Split definitions by '|'
+                    String[] definitions = parts[1].trim().split("\\|");
                     List<String> definitionList = new ArrayList<>();
                     Collections.addAll(definitionList, definitions);
                     slangMap.put(slang, definitionList);
@@ -49,6 +54,19 @@ public class SlangDictionary {
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error loading slang words from file.");
+        }
+    }
+
+    private static void saveSlangWords(String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Map.Entry<String, List<String>> entry : slangMap.entrySet()) {
+                String slang = entry.getKey();
+                String definitions = String.join("|", entry.getValue());
+                writer.write(slang + "`" + definitions);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error saving slang words to file.");
         }
     }
 
@@ -102,7 +120,7 @@ public class SlangDictionary {
         frame.setJMenuBar(menuBar);
 
         searchByDefinitionItem.addActionListener(e -> {
-            String keyword = JOptionPane.showInputDialog(frame, "Enter keyword to search by definition:");
+            String keyword = JOptionPane.showInputDialog(frame, " Enter keyword to search by definition:");
             if (keyword == null || keyword.trim().isEmpty()) return;
 
             StringBuilder results = new StringBuilder();
@@ -148,13 +166,27 @@ public class SlangDictionary {
             Collections.addAll(definitionList, definition.split("\\|"));
 
             if (slangMap.containsKey(slang)) {
-                int choice = JOptionPane.showConfirmDialog(frame, "Slang word already exists. Overwrite?",
-                        "Duplicate Slang Word", JOptionPane.YES_NO_OPTION);
-                if (choice == JOptionPane.NO_OPTION) return;
-            }
+                List<String> existingDefinitions = slangMap.get(slang);
+                boolean added = false;
 
-            slangMap.put(slang, definitionList);
-            JOptionPane.showMessageDialog(frame, "Slang word added/ updated successfully.");
+                for (String newDef : definitionList) {
+                    if (!existingDefinitions.contains(newDef.trim())) {
+                        existingDefinitions.add(newDef.trim());
+                        added = true;
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Definition '" + newDef.trim() + "' already exists for slang '" + slang + "'.", "Duplicate Definition", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+
+                if (added) {
+                    JOptionPane.showMessageDialog(frame, "Slang word updated successfully with new definitions.");
+                } else {
+                    JOptionPane.showMessageDialog(frame, "No new definitions were added.");
+                }
+            } else {
+                slangMap.put(slang, definitionList);
+                JOptionPane.showMessageDialog(frame, "Slang word added successfully.");
+            }
         });
 
         editSlangItem.addActionListener(e -> {
@@ -245,6 +277,15 @@ public class SlangDictionary {
                 JOptionPane.showMessageDialog(frame, "Correct!");
             } else {
                 JOptionPane.showMessageDialog(frame, "Wrong! The correct answer was: " + randomSlang);
+            }
+        });
+
+        // Thêm WindowListener để lưu dữ liệu khi đóng cửa sổ
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveSlangWords("./data/slang.txt");
+                super.windowClosing(e);
             }
         });
 
