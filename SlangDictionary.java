@@ -35,13 +35,14 @@ public class SlangDictionary {
     public static DefaultListModel<String> historyModel = new DefaultListModel<>();
 
     public static void main(String[] args) {
-        loadSlangWords("./data/slang.txt");
+        loadSlangWords("./slang.txt");
         SwingUtilities.invokeLater(SlangDictionary::createAndShowGUI);
     }
 
     private static void loadSlangWords(String filePath) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
+            int i=1;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("`");
                 if (parts.length == 2) {
@@ -50,7 +51,10 @@ public class SlangDictionary {
                     List<String> definitionList = new ArrayList<>();
                     Collections.addAll(definitionList, definitions);
                     slangMap.put(slang, definitionList);
+                } else {
+                    System.out.println(""+i+": "+line);
                 }
+                i++;
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error loading slang words from file.");
@@ -221,7 +225,7 @@ public class SlangDictionary {
         });
 
         resetItem.addActionListener(e -> {
-            loadSlangWords("./data/slang_original.txt");
+            loadSlangWords("./slang_original.txt");
             JOptionPane.showMessageDialog(frame, "Slang dictionary reset to original.");
         });
 
@@ -284,7 +288,7 @@ public class SlangDictionary {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                saveSlangWords("./data/slang.txt");
+                saveSlangWords("./slang.txt");
                 super.windowClosing(e);
             }
         });
