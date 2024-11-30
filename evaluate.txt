@@ -9,3 +9,10 @@
 - Chức năng 8: 10
 - Chức năng 9: 10
 - Chức năng 10: 10
+
+* Các dòng bị lỗi: (chạy hàm loadSlangWords("./slang_original.txt"); để in ra các dòng bị lỗi)
+413: Against Medical Advice
+908: Something really good
+1112: Cam for Cam
+2004: Indicating hesitation
+2882: Person wearing a hooded sweatshirt

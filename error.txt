@@ -1,6 +1,0 @@
-- Các dòng bị lỗi:
-413: Against Medical Advice
-908: Something really good
-1112: Cam for Cam
-2004: Indicating hesitation
-2882: Person wearing a hooded sweatshirt
