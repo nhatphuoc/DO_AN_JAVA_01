@@ -167,33 +167,32 @@ public class SlangDictionary {
             String slang = JOptionPane.showInputDialog(frame, "Enter Slang Word:");
             if (slang == null || slang.trim().isEmpty())
                 return;
-
             String definition = JOptionPane.showInputDialog(frame, "Enter Definition (use '|' for multiple meanings):");
             if (definition == null || definition.trim().isEmpty())
                 return;
-
             List<String> definitionList = new ArrayList<>();
             Collections.addAll(definitionList, definition.split("\\|"));
 
             if (slangMap.containsKey(slang)) {
                 List<String> existingDefinitions = slangMap.get(slang);
-                boolean added = false;
+                boolean canAdd = true;
 
                 for (String newDef : definitionList) {
-                    if (!existingDefinitions.contains(newDef.trim())) {
-                        existingDefinitions.add(newDef.trim());
-                        added = true;
-                    } else {
+                    if (existingDefinitions.contains(newDef.trim())) {
+                        canAdd = false;
                         JOptionPane.showMessageDialog(frame,
                                 "Definition '" + newDef.trim() + "' already exists for slang '" + slang + "'.",
                                 "Duplicate Definition", JOptionPane.WARNING_MESSAGE);
                     }
                 }
 
-                if (added) {
+                if (canAdd) {
+                    for (String newDef : definitionList) {
+                        existingDefinitions.add(newDef.trim());
+                    }
                     JOptionPane.showMessageDialog(frame, "Slang word updated successfully with new definitions.");
                 } else {
-                    JOptionPane.showMessageDialog(frame, "No new definitions were added.");
+                    JOptionPane.showMessageDialog(frame, "No new definitions were added due to duplicates.");
                 }
             } else {
                 slangMap.put(slang, definitionList);
