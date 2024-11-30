@@ -48,8 +48,13 @@ public class SlangDictionary {
                 if (parts.length == 2) {
                     String slang = parts[0].trim();
                     String[] definitions = parts[1].trim().split("\\|");
+                    List<String> trimmedDefinitions = new ArrayList<>();
+                    for (String def : definitions) {
+                        trimmedDefinitions.add(def.trim());
+                    }
+                    String[] trimmedDefinitionsArray = trimmedDefinitions.toArray(new String[0]);
                     List<String> definitionList = new ArrayList<>();
-                    Collections.addAll(definitionList, definitions);
+                    Collections.addAll(definitionList, trimmedDefinitionsArray);
                     slangMap.put(slang, definitionList);
                 } else {
                     System.out.println("" + i + ": " + line);
@@ -170,26 +175,32 @@ public class SlangDictionary {
             String definition = JOptionPane.showInputDialog(frame, "Enter Definition (use '|' for multiple meanings):");
             if (definition == null || definition.trim().isEmpty())
                 return;
+
             List<String> definitionList = new ArrayList<>();
-            Collections.addAll(definitionList, definition.split("\\|"));
+            for (String def : definition.split("\\|")) {
+                definitionList.add(def.trim());
+            }
 
             if (slangMap.containsKey(slang)) {
                 List<String> existingDefinitions = slangMap.get(slang);
-                boolean canAdd = true;
 
+                // for (int i = 0; i < existingDefinitions.size(); i++) {
+                //     existingDefinitions.set(i, existingDefinitions.get(i).trim());
+                // }
+                boolean hasDuplicates = false;
+                
                 for (String newDef : definitionList) {
-                    if (existingDefinitions.contains(newDef.trim())) {
-                        canAdd = false;
+                    if (existingDefinitions.contains(newDef)) {
+                        hasDuplicates = true;
                         JOptionPane.showMessageDialog(frame,
-                                "Definition '" + newDef.trim() + "' already exists for slang '" + slang + "'.",
+                                "Definition '" + newDef + "' already exists for slang '" + slang + "'.",
                                 "Duplicate Definition", JOptionPane.WARNING_MESSAGE);
                     }
                 }
+                 
 
-                if (canAdd) {
-                    for (String newDef : definitionList) {
-                        existingDefinitions.add(newDef.trim());
-                    }
+                if (!hasDuplicates) {
+                    existingDefinitions.addAll(definitionList);
                     JOptionPane.showMessageDialog(frame, "Slang word updated successfully with new definitions.");
                 } else {
                     JOptionPane.showMessageDialog(frame, "No new definitions were added due to duplicates.");
