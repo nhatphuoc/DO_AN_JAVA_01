@@ -16,3 +16,9 @@
 1112: Cam for Cam
 2004: Indicating hesitation
 2882: Person wearing a hooded sweatshirt
+
+* Link github:
+https://github.com/nhatphuoc/DO_AN_JAVA_01
+
+* Link video youtube:
+https://youtu.be/rQIYPIw8L-Y
